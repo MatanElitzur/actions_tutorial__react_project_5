@@ -1,4 +1,4 @@
-name: Website Deployment
+name: Using Reusable Workflow
 on:
   push:
     branches:
@@ -76,16 +76,17 @@ jobs:
           path: dist
   deploy:
     needs: build
+    uses: ./.github/workflows/reusable.yml # Here we will use another workflow
+    with:
+      artifact-name: dist-files #passing the name of the artifact to the input parameter artifact-name
+    #secrets: # we pass a secret value to the flow, we need use the same secret key as in the flow
+    #  some-secret: ${{ secrets.some-secret }} # Here we use the secrets context
+  print-deploy-result:
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Get build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: dist-files
-      - name: Output contents
-        run: ls
-      - name: Deploy
-        run: echo "Deploying..."
+      - name: Print deploy output 
+        run: echo "${{ needs.deploy.outcome.result }}"
   report:
     needs: [lint, deploy] # This job will run after lint and deploy jobs
     if: failure() # This job will run only it there is a failure in the previous steps or jobs
